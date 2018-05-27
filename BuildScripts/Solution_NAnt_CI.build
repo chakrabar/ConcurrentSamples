@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="MySolution_Dev" default="quick-deploy"> <!--basedir="C:\Arghya\Repos\Build\test"-->
+	<description>This NAnt script builds .NET Application and more</description>
+	
+	<!--EDIT this section for each solution BLAH-->
+	<property name="base.dir" value="C:\Projects\Build\BuildOutput\MySolution" />
+	<property name="code.base" value="C:\Projects\Build\Codebase\MySolution_Dev" />
+	<property name="solution.filename" value="MySolution.sln" />	
+	<property name="sonarqube.project.name" value="MySolution DEV" />
+	<property name="sonarqube.project.key" value="mysolution.dev" />
+	<property name="web.publish.dir" value="C:\Projects\Build\Publish\MySolution\Web" />
+	<property name="service.publish.dir" value="C:\Projects\Build\Publish\MySolution\Services" />
+	
+	<!--CHANGE this section as per build machine configuration-->
+	<property name="nunit.path" value="C:\Program Files (x86)\NUnit 2.6.4\bin\nunit-console.exe" />
+	<property name="sonarqube.msbuild.path" value="SonarQube.Scanner.MSBuild.exe" />
+	<property name="sonarqube.server" value="http://localhost:9000" />
+	<property name="opencover.path" value="C:\Users\arghya\AppData\Local\Apps\OpenCover\OpenCover.Console.exe" />
+	<property name="latest.msbuild" value="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\MSBuild.exe" />
+	<property name="curl.path" value="C:\Users\arghya\Downloads\curl-7.57.0-win64-mingw\bin\curl" />
+	<property name="nexus.repo" value="http://localhost:9876/repository/raw-hosted/" />
+	<property name="svn.username" value="arghya" />
+	<property name="svn.password" value="Passw0rd" />
+	<property name="nexus.username" value="admin" />
+	<property name="nexus.password" value="Passw0rd" />
+	<property name="apppool.name" value="Dev" />
+	<property name="appserver.name" value="localhost" />
+	
+	<!--this section can be kept as is-->
+	<property name="build.dir" value="${path::combine(base.dir, 'Output')}" />
+	<property name="tests.dir" value="${path::combine(base.dir, 'TestOutputs')}" />
+	<property name="build.config" value="debug" />
+	
+	<!--details of LOG FILE, change IF required-->
+	<property name="logs.dir" value="C:\Projects\Build\Logs" />
+	<tstamp property="timestamp" pattern="yyyyMMMdd_HH-mm-ss" verbose="true" />
+	<property name="build.log.filename" value="build_${timestamp}.log"/>
+	<echo message="build.log.filename: ${build.log.filename}" />
+	<property name="logfile.path" value="${path::combine(logs.dir, build.log.filename)}" />
+	<record name="${logfile.path}" action="Start" level="Verbose"/>
+	<echo message="Build logged to ${build.log.filename}"/>
+	
+	<!--details of JENKINS JOB, skip if not required-->
+	<property name="jenkins.user" value="admin" />
+	<property name="jenkins.apikey" value="xxxx"/>
+	<property name="jenkins.uri" value="172.0.10.30:8080" />
+	<property name="jenkins.jobname" value="MySolution_Sanity_New"/>
+	<property name="jenkins.parameters" value="testenv=staging&amp;cause=TriggeredFromCICD"/>
+	
+	<!--DO NOT CHNAGE this section-->
+	<property name="svn.revision" value="0"/>
+	<property name="zipfile.path" value="deploy.zip" />
+	<property name="start.time" value="${datetime::now()}" />
+	<property name="end.time" value="${datetime::now()}" />
+	<echo message="Starting the process at ${start.time}" />
+	
+	<!-- AUTOMATE :: SVN checkout, BUILD, TEST, run SONARQUBE, PACKAGE for deployment, store in NEXUS, DEPLOY -->
+	<target name="full-deploy">
+		<call target="clean" />
+		<call target="svncheckout" />
+		<call target="sonarqube-begin" />
+		<call target="build" />
+		<call target="run-nunit" />
+		<call target="run-opencover" />
+		<call target="sonarqube-end" />
+		<call target="zip" />
+		<call target="nexus-load" />
+		<call target="deploy-sites" />
+		<call target="run-jenkins" />
+		<call target="conclude" />
+	</target>
+	
+	<!-- COMPILE :: ONLY - SVN checkout, BUILD, & PACKAGE -->
+	<target name="quick-deploy">
+		<call target="clean" />
+		<call target="svncheckout" />
+		<call target="build" />
+		<call target="zip" />
+		<call target="deploy-sites" />
+		<call target="conclude" />
+	</target>
+
+	<target name="release">		
+		<property name="build.config" value="release" />
+		<property name="build.dir" value="${path::combine(build.dir, 'Release')}" />
+		<echo message="config is ${build.config}, outputdir=${build.dir}" />
+	</target>
+
+	<target name="debug">
+		<property name="build.config" value="debug" />
+		<property name="build.dir" value="${path::combine(build.dir, 'Debug')}" />
+		<echo message="config is ${build.config}, outputdir=${build.dir}" />
+	</target>
+
+	<target name="clean">
+		<call target="${build.config}" />
+		<delete dir="${build.dir}" failonerror="false" />
+		<mkdir dir="${build.dir}" />
+		<delete dir="${tests.dir}" failonerror="false" />
+		<mkdir dir="${tests.dir}" />
+	</target>
+	
+	<!--SVN CHECKOUT task, EDIT for each application/solution-->
+	<target name="svncheckout" description="SVN checkout Library and Solution"> 
+		<echo message="SVN checkout MySolution\Library" /> <!--svnroot == uri ?? -->
+		<svn-checkout
+			destination="${path::combine(code.base, 'Libraries')}"
+			uri="https://svnrepo.com/Dev/CodeBase/Libraries"
+			revision="HEAD"
+			username="${svn.username}"
+			password="${svn.password}"
+		/>
+		<property name="solution.dir" value="${path::combine(code.base, 'MySolutionWeb')}" />
+		<echo message="SVN checkout MySolution\MySolutionWeb" />
+		<svn-checkout 
+            destination="${solution.dir}" 
+            uri="https://svnrepo.com/Dev/CodeBase/Libraries/MySolutionWeb" 
+            revision="HEAD"
+            username="${svn.username}"
+			password="${svn.password}"
+        />
+	</target>
+	
+	<target name="sonarqube-begin">
+		<property name="nunit.results" value="${path::combine(tests.dir, 'NUnitResults.xml')}" />
+		<property name="opencover.xml" value="${path::combine(tests.dir, 'opencover.xml')}" />
+		<exec program="${sonarqube.msbuild.path}" verbose="true">
+			<arg value="begin"/>
+			<arg line='/k:"${sonarqube.project.key}"' />
+			<arg line='/n:"${sonarqube.project.name}"' />
+			<arg line='/v:"1.0"' />
+			<arg line='/d:"sonar.host.url=${sonarqube.server}"' />
+			<arg line='/d:sonar.cs.nunit.reportsPaths="${nunit.results}"' />
+			<arg line='/d:sonar.cs.opencover.reportsPaths="${opencover.xml}"' />
+		</exec>
+	</target>
+	
+	<target name="build">
+		<exec program="${latest.msbuild}" verbose="true">
+			<arg line="${path::combine(solution.dir, solution.filename)}" />
+			<arg value="/property:Configuration=${build.config}"/>
+			<arg value="/property:OutDir=${build.dir}"/>
+		</exec>
+	</target>
+	
+	<target name="run-nunit">
+		<property name="test.dlls" value="${path::combine(build.dir, 'MySolution.Shared.UnitTests.dll')} ${path::combine(build.dir, 'MySolutionWeb.CoreTests.dll')} ${path::combine(build.dir, 'MySolutionWeb.ReportGeneratorTests.dll')} ${path::combine(build.dir, 'MySolutionWeb.Data.UnitTests.dll')} ${path::combine(build.dir, 'MySolutionWeb.WebTests.dll')}" />
+		<exec program="${nunit.path}" verbose="true" failonerror="false">
+			<arg line='/result="${nunit.results}"' />
+			<arg line="${test.dlls}" />
+		</exec>
+	</target>
+	
+	<target name="run-opencover">
+		<exec program="${opencover.path}" verbose="true" failonerror="false">
+			<arg line='-register:user' />
+			<arg line='-target:"${nunit.path}"' />
+			<arg line='-targetargs:"${test.dlls} /noshadow"' />
+			<arg line='-output:"${opencover.xml}"' />
+			<arg line='-filter:"+[MySolution*]* +[MySolutionWeb*]* -[*Tests]* -[*Console]* -[*Contracts]* -[*Models]* -[*Automation]*"' />
+		</exec>
+	</target>
+	
+	<target name="sonarqube-end">
+		<exec program="${sonarqube.msbuild.path}" verbose="true">
+			<arg value="end"/>
+		</exec>
+	</target>
+	
+	<!--gets the SVN revision number-->
+	<target name="getSVNRevision"> <!-- depends="svncheckout" - "build" already does this-->
+		<!-- Retrieve subversion revision number -->
+		<echo message="Retrieving Subversion revision number"/>		
+		<exec
+			program="svn"
+			commandline='log "${solution.dir}" --xml --limit 1'
+			output="${solution.dir}\_revision.xml"
+			failonerror="false"/>
+		<xmlpeek
+			file="${solution.dir}\_revision.xml"
+			xpath="/log/logentry/@revision"
+			property="svn.revision"
+			failonerror="false"/>
+		<echo message="Using Subversion revision number: ${svn.revision}"/>
+	</target>
+	
+	<!-- Create a zip file file for deploy, from build output -->
+	<target name="zip">
+		<call target="getSVNRevision" />
+		<property name="zipfile.name" value="${project::get-name()}_${timestamp}_R${svn.revision}.zip" />
+		<property name="zipfile.path" value="${path::combine(base.dir, zipfile.name)}" />
+		<echo message="zipping files from ${build.dir}" />
+		<zip zipfile="${zipfile.path}" includeemptydirs="true">
+			<fileset basedir="${build.dir}">
+				<include name="**/*" />
+			</fileset>
+		</zip>
+	</target>
+	
+	<!-- Create a zip file file for deploy, from build output -->
+	<target name="nexus-load">
+		<exec program="${curl.path}" verbose="true">
+			<arg line="-v -u ${nexus.username}:${nexus.password} --upload-file" />
+			<arg value="${zipfile.path}"/>
+			<arg value="${nexus.repo}"/>
+		</exec>
+	</target>
+	
+	<!--this has PROJECT SPECIFIC details, CHANGE IT-->
+	<target name="deploy-sites">
+		<copy todir="${web.publish.dir}" overwrite="true">
+			<fileset basedir="${build.dir}\_PublishedWebsites\MySolution.Web">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy todir="${web.publish.dir}\bin\App_Data" overwrite="true">
+			<fileset basedir="${build.dir}\_PublishedWebsites\MySolution.Web\App_Data">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy todir="${service.publish.dir}" overwrite="true">
+			<fileset basedir="${build.dir}\_PublishedWebsites\MySolution.Services">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<!--this needs the script to be run in ADMIN MODE-->
+		<iisapppool action="Restart" pool="${apppool.name}" server="${appserver.name}" />
+	</target>
+	
+	<!-- Trigger a JENKINS JOB - functional test suite -->
+	<target name="run-jenkins">
+		<property name="jenkins.api" value="http://${jenkins.user}:${jenkins.apikey}@${jenkins.uri}/job/${jenkins.jobname}/buildWithParameters" />
+		<exec program="${curl.path}" verbose="true">
+			<arg line="-d ${jenkins.parameters}" />
+			<arg line="-i -X POST ${jenkins.api}" />
+		</exec>
+	</target>
+	
+	<target name="conclude">
+		<property name="end.time" value="${datetime::now()}" />
+		<echo message="PROCESS COMPLETED" />
+		<echo message="Total time taken (hh:mm:ss) - ${((datetime::parse(end.time)) - (datetime::parse(start.time)))}" />
+		<echo message="Check the detailed logs - ${logfile.path}" />
+	</target>
+	
+</project>
