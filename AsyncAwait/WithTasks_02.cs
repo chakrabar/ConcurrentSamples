@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AsyncAwait
 {
-    class Simple
+    class WithTasks_02
     {
         internal static int GetMessageLength()
         {
-            Console.WriteLine($"#1 Starting GetMessageLength Simple on thread {Thread.CurrentThread.ManagedThreadId}");
-            var message = DoTimeTakingWork();
+            Console.WriteLine($"#1 Starting GetMessageLength With Task on thread {Thread.CurrentThread.ManagedThreadId}");
+            Task<string> task = Task.Run(() => DoTimeTakingWork());
             DoIndependentWork();
-            var messageLength = message;
+            task.Wait();
+            var message = task.Result;
             var length = message.Length; //does some work on result
-            Console.WriteLine($"#1 GetMessageLength Simple completed on thread {Thread.CurrentThread.ManagedThreadId}");
+            Console.WriteLine($"#1 GetMessageLength With Task completed on thread {Thread.CurrentThread.ManagedThreadId}");
             return length; //then returns the final result
         }
 

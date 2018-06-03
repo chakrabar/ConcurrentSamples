@@ -13,15 +13,18 @@ namespace AsyncAwait
             sw.Start();
 
             //var messageLength = Simple.GetMessageLength();
-            //var messageLength = WithTasks.GetMessageLength();
+            //var messageLength = WithTasks_02.GetMessageLength();
 
-            //var lengthTask = WithAsync.GetMessageLengthAsync();
-            var lengthTask = WithAsyncLikeTask.GetMessageLength();
+            //var lengthTask = WithAsync_03.GetMessageLengthAsync();
+            var lengthTask = WithAsyncLikeTask_05.GetMessageLength();
+            //var lengthTask = FullAsync_04.GetMessageLengthAsync();
 
             DoSomeOtherWork();
 
             var messageLength = lengthTask.Result;
-            Console.WriteLine($"The messsage length is {messageLength}");
+            //Console.WriteLine($"The messsage length is {messageLength}");
+            //var message = MultipleAwait_06.GetPerson1Async().Result;
+            //AsyncException_07.ExecuteAsync();
 
             Console.WriteLine($"TERMINATING PROGRAM on thread {Thread.CurrentThread.ManagedThreadId}");
             sw.Stop();

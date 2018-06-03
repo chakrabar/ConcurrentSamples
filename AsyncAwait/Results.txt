@@ -1,0 +1,59 @@
+﻿>> SIMPLE
+STARTING PROGRAM on thread 1
+#1 Starting GetMessageLength Simple on thread 1
+#2 Started time taking work on thread 1
+#2 Time taking work completed on thread 1
+#3 Starting independent work on thread 1
+#3 Independent work completed on thread 1
+#1 GetMessageLength Simple completed on thread 1
+#4 Doing IMPORTANT work on thread 1
+TERMINATING PROGRAM on thread 1
+Total Time taken = 8007 ms
+
+>> With Tasks
+STARTING PROGRAM on thread 1
+#1 Starting GetMessageLength With Task on thread 1
+#3 Starting independent work on thread 1
+#2 Started time taking work on thread 3
+#3 Independent work completed on thread 1
+#2 Time taking work completed on thread 3
+#1 GetMessageLength With Task completed on thread 1
+#4 Doing IMPORTANT work on thread 1
+TERMINATING PROGRAM on thread 1
+Total Time taken = 6018 ms
+
+>> With Async & Tasks
+STARTING PROGRAM on thread 1
+#1 Starting GetMessageLengthAsync on thread 1
+#3 Starting independent work on thread 1
+#2 Started time taking work on thread 3
+#3 Independent work completed on thread 1
+#4 Doing IMPORTANT work on thread 1
+#2 Time taking work completed on thread 3
+#1 GetMessageLengthAsync completed on thread 3
+TERMINATING PROGRAM on thread 1
+Total Time taken = 5022 ms
+
+>> Full Async
+STARTING PROGRAM on thread 1
+#1 Starting GetMessageLengthAsync on thread 1
+#2 Started time taking work on thread 1
+#3 Starting independent work on thread 1
+#3 Independent work completed on thread 1
+#4 Doing IMPORTANT work on thread 1
+#2 Time taking work completed on thread 3
+#1 GetMessageLengthAsync completed on thread 3
+TERMINATING PROGRAM on thread 1
+Total Time taken = 5020 ms
+
+>> With Async-like-Tasks with Continuation
+STARTING PROGRAM on thread 1
+#1 Starting GetMessageLengthAsync on thread 1
+#2 Started time taking work on thread 1
+#3 Starting independent work on thread 1
+#3 Independent work completed on thread 1
+#1 GetMessageLengthAsync returning from thread 1
+#4 Doing IMPORTANT work on thread 1
+#2 Time taking work completed on thread 3
+TERMINATING PROGRAM on thread 1
+Total Time taken = 5065 ms

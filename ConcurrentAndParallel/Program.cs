@@ -14,11 +14,12 @@ namespace ConcurrentAndParallel
 
             //new ThreadTests().ValueReturningThread();
             //new TaskTests().DoAsyncWork_6();
-            RunCancellableTask();
+            //RunCancellableTask();
             //new ParallelExamples().RunAll();
+            ContinuationTest.Execute();
 
             Console.WriteLine("Process completed");
-            Console.ReadKey();
+            //Console.ReadKey();
         }
 
         internal static void RunCancellableTask()

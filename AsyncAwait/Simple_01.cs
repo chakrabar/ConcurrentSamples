@@ -1,22 +1,17 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace AsyncAwait
 {
-    class WithAsync
+    class Simple
     {
-        //await can be used ONLY inside a async method
-        //async methods need NOT have await. But then it runs synchronously
-        //having the Async suffix in method name is totally optional, but that is the general convention
-        internal async static Task<int> GetMessageLength()
+        internal static int GetMessageLength()
         {
-            Console.WriteLine($"#1 Starting GetMessageLengthAsync on thread {Thread.CurrentThread.ManagedThreadId}");
-            Task<string> task = Task.Run(() => DoTimeTakingWork());
+            Console.WriteLine($"#1 Starting GetMessageLength Simple on thread {Thread.CurrentThread.ManagedThreadId}");
+            var message = DoTimeTakingWork();
             DoIndependentWork();
-            var message = await task;
-            var length = message.Length; //does some work on awaited result
-            Console.WriteLine($"#1 GetMessageLengthAsync completed on thread {Thread.CurrentThread.ManagedThreadId}");
+            var length = message.Length; //does some work on result
+            Console.WriteLine($"#1 GetMessageLength Simple completed on thread {Thread.CurrentThread.ManagedThreadId}");
             return length; //then returns the final result
         }
 

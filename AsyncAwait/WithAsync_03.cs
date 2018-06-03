@@ -4,18 +4,21 @@ using System.Threading.Tasks;
 
 namespace AsyncAwait
 {
-    class WithTasks
+    class WithAsync_03
     {
-        internal static int GetMessageLength()
+        //await can be used ONLY inside a async method
+        //async methods need NOT have await. But then it runs synchronously
+        //having the Async suffix in method name is totally optional, but that is the general convention
+        internal async static Task<int> GetMessageLengthAsync()
         {
-            Console.WriteLine($"#1 Starting GetMessageLength With Task on thread {Thread.CurrentThread.ManagedThreadId}");
+            Console.WriteLine($"#1 Starting GetMessageLengthAsync on thread {Thread.CurrentThread.ManagedThreadId}");
             Task<string> task = Task.Run(() => DoTimeTakingWork());
             DoIndependentWork();
-            task.Wait();
-            var message = task.Result;
-            var length = message.Length; //does some work on result
-            Console.WriteLine($"#1 GetMessageLength With Task completed on thread {Thread.CurrentThread.ManagedThreadId}");
+            var message = await task; //awaits the result
+            var length = message.Length; //does some work on awaited result
+            Console.WriteLine($"#1 GetMessageLengthAsync completed on thread {Thread.CurrentThread.ManagedThreadId}");
             return length; //then returns the final result
+            //the result is int, but because of the async-await, it returns as Task<int>
         }
 
         internal static void DoIndependentWork()
