@@ -11,7 +11,6 @@ namespace AsyncAwait
             Console.WriteLine($"#1 Starting GetMessageLength With Task on thread {Thread.CurrentThread.ManagedThreadId}");
             Task<string> task = Task.Run(() => DoTimeTakingWork());
             DoIndependentWork();
-            task.Wait();
             var message = task.Result;
             var length = message.Length; //does some work on result
             Console.WriteLine($"#1 GetMessageLength With Task completed on thread {Thread.CurrentThread.ManagedThreadId}");

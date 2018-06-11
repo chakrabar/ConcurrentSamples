@@ -4,7 +4,7 @@ namespace Threading
 {
     class Interlocked_07
     {
-        static void Execute()
+        internal static void Execute()
         {
             //update a value atomically
             int sharedVar = 1;

@@ -12,7 +12,8 @@ namespace AsyncAwait
             Task<string> messageTask = DoTimeTakingWorkAsync();            
             var lengthTask = messageTask.ContinueWith((stringTask) =>
             {
-                var message = stringTask.Result; //awaits the result
+                Console.WriteLine($"#1.2 Continuation runs on thread {Thread.CurrentThread.ManagedThreadId}");
+                var message = stringTask.Result; //gets the result
                 var length = message.Length; //does some work on result
                 return length; //then returns the final result
             });
@@ -20,6 +21,27 @@ namespace AsyncAwait
             //2. Here, await also captures the current SynchronizationContext  & TaskScheduler
             //3. If SynchronizationContext was null, the continuation will run on the TaskScheduler
             //4. Else the continuation is posted to the capctured SynchronizationContext (has thread affinity)
+            DoIndependentWork();
+            Console.WriteLine($"#1 GetMessageLengthAsync returning from thread {Thread.CurrentThread.ManagedThreadId}");
+            return lengthTask; //it has to return, cannot resume work after awaited work is done
+        }
+
+        internal static Task<int> GetMessageLengthV2()
+        {
+            Console.WriteLine($"#1 Starting GetMessageLengthAsync on thread {Thread.CurrentThread.ManagedThreadId}");
+            Task<string> messageTask = DoTimeTakingWorkAsync();
+
+            TaskScheduler targetScheduler = SynchronizationContext.Current != null
+                ? TaskScheduler.FromCurrentSynchronizationContext() //e.g. app with UI thread
+                : TaskScheduler.Current; //when there is NO SynchronizationContext e.g. Console
+
+            var lengthTask = messageTask.ContinueWith((stringTask) =>
+            {
+                Console.WriteLine($"#1.2 Continuation runs on thread {Thread.CurrentThread.ManagedThreadId}");
+                var message = stringTask.Result; //gets the result
+                var length = message.Length; //does some work on result
+                return length; //then returns the final result
+            }, targetScheduler);
             DoIndependentWork();
             Console.WriteLine($"#1 GetMessageLengthAsync returning from thread {Thread.CurrentThread.ManagedThreadId}");
             return lengthTask; //it has to return, cannot resume work after awaited work is done

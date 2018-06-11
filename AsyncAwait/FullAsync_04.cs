@@ -32,7 +32,8 @@ namespace AsyncAwait
                 Thread.Sleep(5000); //works for 5 seconds
                 Console.WriteLine($"#2 Time taking work completed on thread {Thread.CurrentThread.ManagedThreadId}");
             });
-            await messageTask;            
+            await messageTask;
+            Console.WriteLine($"#2 returns from thread {Thread.CurrentThread.ManagedThreadId}");
             return $"Current time : {DateTime.Now.ToLongDateString()}";
         }
     }

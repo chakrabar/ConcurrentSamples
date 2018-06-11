@@ -15,6 +15,7 @@ namespace AsyncAwait
         {
             Task<int> idTask = GetIdAsync();
             Task<string> nameTask = GetNameAsync();
+            Task.WaitAll(idTask, nameTask);
             await Task.WhenAll(idTask, nameTask);
             return $"Person Id:{idTask.Result}, Name:{nameTask.Result}";
         }

@@ -9,7 +9,12 @@ namespace Threading
 
         internal static void Execute()
         {
+            //test
             var sw = new SpinWait(); //hola!
+            WaitHandle.WaitAll(new WaitHandle[] { new Mutex(), new Mutex() });
+            WaitHandle.WaitAny(new WaitHandle[] { new Mutex(), new Mutex() });
+            
+            //actual
             for (int i = 0; i < 10; i++)
             {
                 Thread thread = new Thread(AquireMutex);

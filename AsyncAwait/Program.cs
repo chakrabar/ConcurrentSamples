@@ -16,7 +16,7 @@ namespace AsyncAwait
             //var messageLength = WithTasks_02.GetMessageLength();
 
             //var lengthTask = WithAsync_03.GetMessageLengthAsync();
-            var lengthTask = WithAsyncLikeTask_05.GetMessageLength();
+            var lengthTask = WithAsyncLikeTask_05.GetMessageLengthV2();
             //var lengthTask = FullAsync_04.GetMessageLengthAsync();
 
             DoSomeOtherWork();

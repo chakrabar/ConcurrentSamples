@@ -22,6 +22,21 @@ namespace Threading
             smps.Release(3); //exception (count = 4 > maxCount 3)
         }
 
+        static readonly SemaphoreSlim semaphore = new SemaphoreSlim(5, 5);
+
+        internal static void AccessSharedResource()
+        {
+            try
+            {
+                semaphore.Wait();
+                //access the shared resource pool
+            }
+            finally
+            {
+                semaphore.Release();
+            }            
+        }
+
         static void ReleaseSemaphore()
         {
             Thread.Sleep(1000);
