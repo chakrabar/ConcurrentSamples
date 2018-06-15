@@ -54,8 +54,8 @@ namespace Threading
 
             bool hasKey = safeDict.TryGetValue(3, out string value);
 
-            bool isStackEmpty = safeDict.IsEmpty; //false
-            int itemsInStack = safeDict.Count; //2
+            bool isDictEmpty = safeDict.IsEmpty; //false
+            int itemsInDick = safeDict.Count; //2
         }
     }
 }

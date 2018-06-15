@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Threading
 {
-    class SimplePCQueue_Monitor_13<T>
+    class SimplePCQueue_Monitor_13<T> : IPCQueue<T>
     {
         readonly object _syncLock = new object();
         Queue<T> _prodConsQueue = new Queue<T>();

@@ -24,7 +24,8 @@ namespace Threading
             //CountDownEvent_12.Execute();
             //ThreadAbort_15.Execute(); //not supported
 
-            ThreadSafeCollections_16.ConcurrentStackDemo();
+            //ThreadSafeCollections_16.ConcurrentStackDemo();
+            new WhatIsShared_17().Execute();
 
             //ProducerConsumerExample();
 
@@ -34,7 +35,7 @@ namespace Threading
 
         private static void ProducerConsumerExample()
         {
-            var pcQueue = new SimplePCQueue_Monitor_13<string>();
+            IPCQueue<string> pcQueue = new SimplePCQueue_3_19<string>(); //SimplePCQueue_Monitor_13<string>();
             Task[] tasks = new Task[10];
             var items = Enumerable.Range(1, 12).Select(i => i.ToString());
 
