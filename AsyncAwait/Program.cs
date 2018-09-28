@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AsyncAwait
 {
@@ -8,6 +9,9 @@ namespace AsyncAwait
     {
         static void Main(string[] args)
         {
+            var t = new ThreadAndAsyncLoacl().EntryPoint();
+            Task.WaitAll(t);
+
             Console.WriteLine($"STARTING PROGRAM on thread {Thread.CurrentThread.ManagedThreadId}");
             var sw = new Stopwatch();
             sw.Start();
